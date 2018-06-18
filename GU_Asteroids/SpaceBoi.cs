@@ -8,17 +8,19 @@ namespace GU_Asteroids
 		Point pos1;
 		Point pos2;
 		Point pos3;
+        Image img;
 		public SpaceBoi(Point pos1, Point pos2, Point pos3, Point dir) : base(new Point(), dir, new Size()) // я не понимаю как тут правильно это сделать
 		{
 			this.pos1 = pos1;
 			this.pos2 = pos2;
 			this.pos3 = pos3;
+            img = Image.FromFile("VmZ6l7v.png");
+            img.RotateFlip(RotateFlipType.Rotate90FlipX);
 		}
 
 		public override void Draw()
 		{
-			Image img = Image.FromFile("VmZ6l7v.png");
-			img.RotateFlip(RotateFlipType.Rotate90FlipX);
+			
 			Point[] points = new Point[3] { pos1, pos2, pos3 };
 
 			Game.buffer.Graphics.DrawImage(img, points);

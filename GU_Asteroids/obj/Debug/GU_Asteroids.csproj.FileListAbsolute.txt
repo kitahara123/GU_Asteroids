@@ -5,3 +5,10 @@ C:\geek\GU_Asteroids\GU_Asteroids\bin\Debug\GU_Asteroids.exe
 C:\geek\GU_Asteroids\GU_Asteroids\bin\Debug\GU_Asteroids.pdb
 C:\geek\GU_Asteroids\GU_Asteroids\obj\Debug\GU_Asteroids.exe
 C:\geek\GU_Asteroids\GU_Asteroids\obj\Debug\GU_Asteroids.pdb
+C:\geek\GU_Asteroids\bin\Debug\GU_Asteroids.exe.config
+C:\geek\GU_Asteroids\bin\Debug\GU_Asteroids.exe
+C:\geek\GU_Asteroids\bin\Debug\GU_Asteroids.pdb
+C:\geek\GU_Asteroids\obj\Debug\GU_Asteroids.csprojAssemblyReference.cache
+C:\geek\GU_Asteroids\obj\Debug\GU_Asteroids.csproj.CoreCompileInputs.cache
+C:\geek\GU_Asteroids\obj\Debug\GU_Asteroids.exe
+C:\geek\GU_Asteroids\obj\Debug\GU_Asteroids.pdb

@@ -2,35 +2,32 @@
 
 namespace GU_Asteroids
 {
-	class BaseObject
+	abstract class BaseObject: ICollision
 	{
 		protected Point pos;
 		protected Point dir;
 		protected Size size;
 
-		public BaseObject (Point pos, Point dir, Size size)
+		protected BaseObject (Point pos, Point dir, Size size)
 		{
 			this.pos = pos;
 			this.dir = dir;
 			this.size = size;
 		}
 
-		public virtual void Draw()
-		{
-			Game.buffer.Graphics.DrawEllipse(Pens.White, pos.X, pos.Y, size.Width, size.Height);
-		}
+        public Rectangle Rect => new Rectangle(pos, size);
 
-		public virtual void Update()
-		{
-			pos.X = pos.X + dir.X;
-			pos.Y = pos.Y + dir.Y;
+        public bool Collision(ICollision o)
+        {
+            return o.Rect.IntersectsWith(this.Rect);
+        }
 
-			if (pos.X < 0) dir.X = -dir.X;
-			if (pos.X > Game.Width) dir.X = -dir.X;
+        public abstract void Draw();
 
-			if (pos.Y < 0) dir.Y = -dir.Y;
-			if (pos.Y > Game.Height) dir.Y = -dir.Y;
+        //	Game.buffer.Graphics.DrawEllipse(Pens.White, pos.X, pos.Y, size.Width, size.Height);
 
-		}
+
+        public abstract void Update();
+
 	}
 }
