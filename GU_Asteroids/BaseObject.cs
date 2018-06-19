@@ -7,9 +7,11 @@ namespace GU_Asteroids
 		protected Point pos;
 		protected Point dir;
 		protected Size size;
+        protected Game go;
 
 		protected BaseObject (Point pos, Point dir, Size size)
 		{
+            go = Game.getGameObject;
 			this.pos = pos;
 			this.dir = dir;
 			this.size = size;

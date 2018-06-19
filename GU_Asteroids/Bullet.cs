@@ -9,13 +9,14 @@ namespace GU_Asteroids
 {
     class Bullet:BaseObject
     {
+
         public Bullet(Point pos, Point dir, Size size) : base(pos, dir, size)
         {
         }
 
         public override void Draw()
         {
-            Game.buffer.Graphics.DrawRectangle(Pens.OrangeRed, pos.X, pos.Y, size.Width, size.Height);
+            go.Buffer.Graphics.DrawRectangle(Pens.OrangeRed, pos.X, pos.Y, size.Width, size.Height);
 
         }
 

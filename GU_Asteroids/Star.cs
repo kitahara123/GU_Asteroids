@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GU_Asteroids
 {
@@ -11,20 +7,20 @@ namespace GU_Asteroids
 	{
 		public Star(Point pos, Point dir, Size size) : base(pos, dir, size)
 		{
-		}
+        }
 
 		public override void Draw()
 		{
-			Game.buffer.Graphics.DrawLine(Pens.White, pos.X, pos.Y, pos.X + size.Width,
+            go.Buffer.Graphics.DrawLine(Pens.White, pos.X, pos.Y, pos.X + size.Width,
 			pos.Y + size.Height);
-			Game.buffer.Graphics.DrawLine(Pens.White, pos.X + size.Width, pos.Y, pos.X,
+            go.Buffer.Graphics.DrawLine(Pens.White, pos.X + size.Width, pos.Y, pos.X,
 			pos.Y + size.Height);
 		}
 
 		public override void Update()
 		{
 			pos.X = pos.X + dir.X;
-			if (pos.X < 0) pos.X = Game.Width + size.Width;
+			if (pos.X < 0) pos.X = go.Width + size.Width;
 		}
 
 

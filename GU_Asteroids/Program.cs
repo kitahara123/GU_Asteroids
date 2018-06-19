@@ -12,12 +12,15 @@ namespace GU_Asteroids
 		static void Main(string[] args)
 		{
 			Form form = new Form();
-			form.Width = Screen.PrimaryScreen.Bounds.Width;
-			form.Height = Screen.PrimaryScreen.Bounds.Width;
-			Game.Init(form);
+
+            Game go = Game.getGameObject;
+
+            go.Width = 1000;
+            go.Height = 1000;
+            go.Init(form);
 			form.Show();
-            Game.Load();
-			Game.Draw();
+            go.Load();
+            go.Draw();
 			Application.Run(form);
 		}
 	}

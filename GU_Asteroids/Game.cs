@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,114 +7,154 @@ namespace GU_Asteroids
 {
 	class Game
 	{
-		private static BufferedGraphicsContext _context;
-		public static BufferedGraphics buffer;
+        private static Game game = null;
+        private const int ASTEROIDS_INITIAL_AMOUNT = 30;
+        private const int STARS_INITIAL_AMOUNT = 50;
+        private const int ASTEROIDS_X_SPAWNPOINT = -100;
+        private const int STARS_X_SPAWNPOINT = 1000;
 
-		public static int Width { get; set; }
-		public static int Height { get; set; }
+        private const int MAX_WIDTH = 1000;
+        private const int MAX_HEiGHT = 1000;
 
-		private static BaseObject[] _objs;
-        private static Bullet _bullet;
-        private static Asteroid[] _asteroids;
+        private BufferedGraphicsContext _context;
 
-		static Game()
+        private int width;
+        private int height;
+
+        public int Width
+        {
+            get { return width; }
+            set
+            {
+                if (value > MAX_WIDTH || value < 0) throw new ArgumentOutOfRangeException();
+                else width = value;
+            }
+        }
+        public int Height
+        {
+            get { return height; }
+            set
+            {
+                if (value > MAX_HEiGHT || value < 0) throw new ArgumentOutOfRangeException();
+                else height = value;
+            }
+        }
+
+        public List<Asteroid> Asteroids { get; set; }
+
+        private Star[] _objs;
+        private Bullet _bullet;
+        private Random rnd;
+
+        private Game()
 		{
-		}
+            rnd = new Random();
+        }
 
-		public static void Load ()
+        public static Game getGameObject
+        {
+            get
+            {
+                if (game == null)
+                {
+                    game = new Game();
+                }
+                return game;
+            }
+        }
+
+        public BufferedGraphics Buffer { get; set; }
+
+        public void Load ()
 		{
-            _objs = new BaseObject[30];
+            if (Buffer == null) throw new Exception();
+            _objs = new Star[STARS_INITIAL_AMOUNT];
             _bullet = new Bullet(new Point(0, 200), new Point(5, 0), new Size(40, 10));
-            _asteroids = new Asteroid[3];
-            var rnd = new Random();
-
+            Asteroids = new List<Asteroid>();
+            
             for (int i = 0; i < _objs.Length; i++)
             {
                 int r = rnd.Next(5, 50);
-                _objs[i] = new Star(new Point(1000, rnd.Next(0, Game.Height)), new Point(-r, r), new Size(3, 3));
+                _objs[i] = new Star(new Point(STARS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r, r), new Size(3, 3));
             }
 
-            for (int i = 0; i < _asteroids.Length; i++)
+            for (int i = 0; i < ASTEROIDS_INITIAL_AMOUNT; i++)
+            {
+                Repopulate();
+            }
+
+
+        }
+        private void Repopulate()
+        {
+            if (Asteroids.Count < ASTEROIDS_INITIAL_AMOUNT)
             {
                 int r = rnd.Next(5, 50);
-                _asteroids[i] = new Asteroid(new Point(1000, rnd.Next(0, Game.Height)), new Point(-r / 5, r), new Size(r, r));
+                Asteroids.Add(new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r)));
             }
-
-
-
-
-            /*			_objs = new BaseObject[45];
-                        for (int i = 0; i < _objs.Length / 3; i++)
-                        {
-                            _objs[i] = new Asteroid(new Point(600, i * 20), new Point(-i, -i), new Size(10, 10));
-                        }
-
-                        for (int i = _objs.Length / 3; i < _objs.Length / 1.5 ; i++)
-                        {
-                            _objs[i] = new Star(new Point(600, i * 20), new Point(-i, 0), new Size(5, 5));
-                        }
-
-                        for (int i = (int)(_objs.Length / 1.5); i < _objs.Length - 1; i++)
-                        {
-                            _objs[i] = new WierdFaces(new Point(600, 200), new Point(i-29, i-29), i-20);
-                        }
-                        _objs[44] = new SpaceBoi(new Point(350, 200), new Point(350, 250), new Point(400, 200), new Point(5,5)); */
 
         }
 
-		public static void Init(Form form)
+        public void Init(Form form)
 		{
-			Timer t = new Timer { Interval = 100 };
+            Graphics g;
+            _context = BufferedGraphicsManager.Current;
+            form.Width = Width;
+            form.Height = Height;
+            g = form.CreateGraphics();
+
+            Buffer = _context.Allocate(g, new Rectangle(0, 0, Width, Height));
+
+            Timer t = new Timer { Interval = 100 };
 			t.Start();
 			t.Tick += Timer_Tick;
 
-			Graphics g;
-			_context = BufferedGraphicsManager.Current;
-			g = form.CreateGraphics();
-
-			Width = form.Width;
-			Height = form.Height;
-
-			buffer = _context.Allocate(g, new Rectangle(0, 0, Width, Height));
 		}
 
-		public static void Draw()
+		public void Draw()
 		{
 
-			buffer.Graphics.Clear(Color.Black);
+			Buffer.Graphics.Clear(Color.Black);
 
-			foreach (BaseObject bo in _objs)
+			foreach (Star bo in _objs)
 			{
-				bo.Draw();
+                bo.Draw();
 			}
-            foreach (Asteroid a in _asteroids)
+            foreach (Asteroid a in Asteroids)
             {
                 a.Draw();
             }
             _bullet.Draw();
 
 
-			buffer.Render();
+			Buffer.Render();
 		}
 
-		private static void Update()
+		private void Update()
 		{
 			foreach (BaseObject bo in _objs)
 			{
 				bo.Update();
 			}
-            foreach (Asteroid a in _asteroids)
+            for (int i = 0; i < Asteroids.Count; i++)
             {
+                Asteroid a = Asteroids[i];
                 a.Update();
-                if (a.Collision(_bullet)) { System.Media.SystemSounds.Hand.Play(); }
+                if (a.Collision(_bullet))
+                {
+                    System.Media.SystemSounds.Hand.Play();
+                    a.Destroy();
+                    Asteroids.RemoveAt(i);
+                }
             }
 		}
 
-		private static void Timer_Tick(object sender, EventArgs e)
+		private void Timer_Tick(object sender, EventArgs e)
 		{
+            Repopulate();
 			Draw();
 			Update();
 		}
 
-	}
+    }
 }
