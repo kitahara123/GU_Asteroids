@@ -2,6 +2,7 @@
 
 namespace GU_Asteroids
 {
+	public delegate void Message();
 	abstract class BaseObject: ICollision
 	{
 		protected Point pos;
@@ -17,7 +18,7 @@ namespace GU_Asteroids
 			this.size = size;
 		}
 
-        public Rectangle Rect => new Rectangle(pos, size);
+        public virtual Rectangle Rect => new Rectangle(pos, size);
 
         public bool Collision(ICollision o)
         {
@@ -25,10 +26,6 @@ namespace GU_Asteroids
         }
 
         public abstract void Draw();
-
-        //	Game.buffer.Graphics.DrawEllipse(Pens.White, pos.X, pos.Y, size.Width, size.Height);
-
-
         public abstract void Update();
 
 	}

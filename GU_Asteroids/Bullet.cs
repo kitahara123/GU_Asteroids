@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace GU_Asteroids
 {
     class Bullet:BaseObject
     {
+		private int speed;
 
-        public Bullet(Point pos, Point dir, Size size) : base(pos, dir, size)
+        public Bullet(Point pos, Point dir, Size size, int speed) : base(pos, dir, size)
         {
+			this.speed = speed;
         }
 
         public override void Draw()
@@ -22,7 +19,10 @@ namespace GU_Asteroids
 
         public override void Update()
         {
-            pos.X = pos.X + 3;
+            pos.X = pos.X + speed;
+
+			if (pos.X > go.Width) go.Bullets.Remove(this);
+			
         }
     }
 }

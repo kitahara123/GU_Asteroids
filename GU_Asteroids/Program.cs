@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace GU_Asteroids
 {
@@ -16,7 +11,7 @@ namespace GU_Asteroids
             Game go = Game.getGameObject;
 
             go.Width = 1000;
-            go.Height = 1000;
+            go.Height = 600;
             go.Init(form);
 			form.Show();
             go.Load();
