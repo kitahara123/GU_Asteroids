@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace GU_Asteroids
 {
@@ -114,9 +115,7 @@ namespace GU_Asteroids
 		}
         private void Repopulate()
         {
-            bool b = true;
-            foreach (Asteroid a in Asteroids) if (a != null) b=false;
-            if (b)
+            if (Asteroids.Where(e => e != null).Count()==0)
             {
                 int r;
                 for (int i = 0; i < Asteroids.Count; i++)
