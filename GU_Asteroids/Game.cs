@@ -15,7 +15,7 @@ namespace GU_Asteroids
         private const int ASTEROIDS_X_SPAWNPOINT = -100;
         private const int STARS_X_SPAWNPOINT = 1000;
 		private const int BULLET_SPEED = 15;
-		private const int MAX_SCORE = 30;
+		private const int MAX_SCORE = 50;
 
 		private const int MAX_WIDTH = 1000;
         private const int MAX_HEiGHT = 1000;
@@ -102,18 +102,32 @@ namespace GU_Asteroids
 
             for (int i = 0; i < ASTEROIDS_INITIAL_AMOUNT; i++)
             {
-                Repopulate();
+                int r = rnd.Next(5, 50);
+                Asteroids.Add(new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r)));
             }
-			GameLogger(Log, "Load End");
+
+            Point p = new Point(40, rnd.Next(100, game.Height - 100));
+            _medKit = new MedKit(p, new Point(), new Size(10, 10));
+
+            GameLogger(Log, "Load End");
 
 		}
         private void Repopulate()
         {
-            if (Asteroids.Count < ASTEROIDS_INITIAL_AMOUNT)
+            bool b = true;
+            foreach (Asteroid a in Asteroids) if (a != null) b=false;
+            if (b)
             {
-                int r = rnd.Next(5, 50);
+                int r;
+                for (int i = 0; i < Asteroids.Count; i++)
+                {
+                    r = rnd.Next(5, 50);
+                    Asteroids[i] = new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r));
+                }
+                r = rnd.Next(5, 50);
                 Asteroids.Add(new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r)));
             }
+            
 
 			if (_medKit == null)
 			{
@@ -151,7 +165,7 @@ namespace GU_Asteroids
 		private void Form_KeyDown(object sender, KeyEventArgs e)
 		{
 			
-			if (e.KeyCode == Keys.Q && Bullets.Count <45) Bullets.Add(new Bullet(_ship.GunPoint, new Point(4, 0), new Size(4, 1), BULLET_SPEED));
+			if (e.KeyCode == Keys.Q) Bullets.Add(new Bullet(_ship.GunPoint, new Point(4, 0), new Size(4, 1), BULLET_SPEED));
 			if (e.KeyCode == Keys.Up) _ship.Up();
 			if (e.KeyCode == Keys.Down) _ship.Down();
 		}
@@ -163,7 +177,7 @@ namespace GU_Asteroids
 
 			foreach (Bullet b in Bullets)
 			{
-				b.Draw();
+				b?.Draw();
 			}
 
 			foreach (Star bo in _objs)
@@ -173,10 +187,13 @@ namespace GU_Asteroids
 
             foreach (Asteroid a in Asteroids)
             {
-                a.Draw();
+                a?.Draw();
             }
 			_ship.Draw();
-			Buffer.Graphics.DrawString("Energy:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);			Buffer.Graphics.DrawString("Score:" + score, SystemFonts.DefaultFont, Brushes.White, 100, 0);			_medKit.Draw();
+			Buffer.Graphics.DrawString("Energy:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);
+			Buffer.Graphics.DrawString("Score:" + score, SystemFonts.DefaultFont, Brushes.White, 100, 0);
+
+			_medKit.Draw();
 
 			Buffer.Render();
 		}
@@ -188,10 +205,14 @@ namespace GU_Asteroids
 				_ship.Heal(_medKit.Power);
 				_medKit = null;	
 			}
-			for (int i = 0; i < Bullets.Count; i++)
-			{
-				Bullets[i].Update();
-			}
+
+            for (int i = 0; i < Bullets.Count; i++)
+            {
+                var b = Bullets[i];
+                b?.Update();
+                if (b != null && b.OutOfFrame()) b = null;
+            }
+
 			foreach (BaseObject bo in _objs)
 			{
 				bo.Update();
@@ -199,27 +220,30 @@ namespace GU_Asteroids
 
             for (int iA = 0; iA < Asteroids.Count; iA++)
             {
+                if (Asteroids[iA] == null) continue;
+
                 Asteroid a = Asteroids[iA];
                 a.Update();
-
+                                
 				for (int iB = 0; iB < Bullets.Count; iB++)
 				{
-					if (a.Collision(Bullets[iB]))
+					if (Bullets[iB] !=null && a.Collision(Bullets[iB]))
 					{
 						System.Media.SystemSounds.Hand.Play();
 						a.Destroy();
 						score += a.Power;
-						Asteroids.RemoveAt(iA);
-						Bullets.RemoveAt(iB);
+                        Asteroids[iA] = null;
+                        Bullets[iB] = null;
 					}
 				}
 
 				if (_ship.Collision(a))
 				{
 					_ship.EnergyLow(rnd.Next(1,10));
-					Asteroids.RemoveAt(iA);
-					System.Media.SystemSounds.Asterisk.Play();
-					if (_ship.Energy <= 0) _ship.Die();
+                    Asteroids[iA] = null;
+                    System.Media.SystemSounds.Asterisk.Play();
+					if (_ship.Energy <= 0) _ship.Die();
+
 				}
 
 			}

@@ -2,7 +2,8 @@
 
 namespace GU_Asteroids
 {
-	public delegate void Message();
+	public delegate void Message();
+
 	abstract class BaseObject: ICollision
 	{
 		protected Point pos;
