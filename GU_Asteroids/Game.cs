@@ -12,6 +12,7 @@ namespace GU_Asteroids
 	{
         private static Game game = null;
         private const int ASTEROIDS_INITIAL_AMOUNT = 20;
+		private int ASTEROIDS_COUNTER = ASTEROIDS_INITIAL_AMOUNT;
         private const int STARS_INITIAL_AMOUNT = 50;
         private const int ASTEROIDS_X_SPAWNPOINT = -100;
         private const int STARS_X_SPAWNPOINT = 1000;
@@ -22,7 +23,7 @@ namespace GU_Asteroids
         private const int MAX_HEiGHT = 1000;
 
         private BufferedGraphicsContext _context;
-		Log Log = new GameLogger().ConsoleLog;
+		Log console = new GameLogger().ConsoleLog;
 
 		private int width;
         private int height;
@@ -85,9 +86,40 @@ namespace GU_Asteroids
 
         public BufferedGraphics Buffer { get; set; }
 
-        public void Load ()
+		/// <summary>
+		/// Инициализирует компоненты формы
+		/// </summary>
+		public void Init(Form form)
 		{
-			GameLogger(Log, "Load Start");
+			GameLogger(console, "Init Start");
+			Graphics g;
+			_context = BufferedGraphicsManager.Current;
+			form.Width = Width;
+			form.Height = Height;
+			g = form.CreateGraphics();
+			form.KeyDown += Form_KeyDown;
+
+
+			Buffer = _context.Allocate(g, new Rectangle(0, 0, Width, Height));
+
+			t = new Timer { Interval = 100 };
+			t.Start();
+			t.Tick += Timer_Tick;
+
+			Ship.MessageDie += Finish;
+
+			GameLogger(console, "Game Hight = " + Height);
+			GameLogger(console, "Game Width = " + Width);
+			GameLogger(console, "Init End");
+		}
+
+
+		/// <summary>
+		/// Создает наполнение уровня
+		/// </summary>
+		public void Load ()
+		{
+			GameLogger(console, "Load Start");
 			Bullets = new List<Bullet>();
 			Asteroids = new List<Asteroid>();
 
@@ -110,21 +142,25 @@ namespace GU_Asteroids
             Point p = new Point(40, rnd.Next(100, game.Height - 100));
             _medKit = new MedKit(p, new Point(), new Size(10, 10));
 
-            GameLogger(Log, "Load End");
-
+            GameLogger(console, "Load End");
 		}
-        private void Repopulate()
+
+		/// <summary>
+		/// Спавнит/респавнит астероиды и аптечки
+		/// </summary>
+		private void Repopulate()
         {
-            if (Asteroids.Where(e => e != null).Count()==0)
+
+            if (ASTEROIDS_COUNTER <=0)
             {
-                int r;
-                for (int i = 0; i < Asteroids.Count; i++)
+				Asteroids.Clear();
+				ASTEROIDS_COUNTER = ASTEROIDS_INITIAL_AMOUNT + 3;
+
+                for (int i = 0; i <= ASTEROIDS_COUNTER; i++)
                 {
-                    r = rnd.Next(5, 50);
-                    Asteroids[i] = new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r));
+					int r = rnd.Next(5, 50);
+					Asteroids.Add(new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r)));
                 }
-                r = rnd.Next(5, 50);
-                Asteroids.Add(new Asteroid(new Point(Width + ASTEROIDS_X_SPAWNPOINT, rnd.Next(0, Height)), new Point(-r / 5, r), new Size(r, r)));
             }
             
 
@@ -132,34 +168,11 @@ namespace GU_Asteroids
 			{
 				Point p = new Point(40, rnd.Next(100, game.Height - 100));
 				_medKit = new MedKit(p, new Point(), new Size(10, 10));
-				GameLogger(Log, "New medKit spawned at " + p);
+				GameLogger(console, "New medKit spawned at " + p);
 			}
 
         }
 
-        public void Init(Form form)
-		{
-			GameLogger(Log, "Init Start");
-			Graphics g;
-            _context = BufferedGraphicsManager.Current;
-            form.Width = Width;
-            form.Height = Height;
-            g = form.CreateGraphics();
-			form.KeyDown += Form_KeyDown;
-
-
-			Buffer = _context.Allocate(g, new Rectangle(0, 0, Width, Height));
-
-            t = new Timer { Interval = 100 };
-			t.Start();
-			t.Tick += Timer_Tick;
-
-			Ship.MessageDie += Finish;
-
-			GameLogger(Log, "Game Hight = " + Height);
-			GameLogger(Log, "Game Width = " + Width);
-			GameLogger(Log, "Init End");
-		}
 
 		private void Form_KeyDown(object sender, KeyEventArgs e)
 		{
@@ -169,34 +182,36 @@ namespace GU_Asteroids
 			if (e.KeyCode == Keys.Down) _ship.Down();
 		}
 
+		/// <summary>
+		/// Отрисовывает уровень
+		/// </summary>
 		public void Draw()
 		{
 
 			Buffer.Graphics.Clear(Color.Black);
 
 			foreach (Bullet b in Bullets)
-			{
 				b?.Draw();
-			}
 
 			foreach (Star bo in _objs)
-			{
                 bo.Draw();
-			}
 
             foreach (Asteroid a in Asteroids)
-            {
                 a?.Draw();
-            }
+
 			_ship.Draw();
-			Buffer.Graphics.DrawString("Energy:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);
-			Buffer.Graphics.DrawString("Score:" + score, SystemFonts.DefaultFont, Brushes.White, 100, 0);
 
 			_medKit.Draw();
+
+			Buffer.Graphics.DrawString("Energy:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);
+			Buffer.Graphics.DrawString("Score:" + score, SystemFonts.DefaultFont, Brushes.White, 100, 0);
 
 			Buffer.Render();
 		}
 
+		/// <summary>
+		/// Игровая логика
+		/// </summary>
 		private void Update()
 		{
 			if (_medKit != null &&_ship.Collision(_medKit))
@@ -212,10 +227,8 @@ namespace GU_Asteroids
                 if (b != null && b.OutOfFrame()) b = null;
             }
 
-			foreach (BaseObject bo in _objs)
-			{
+			foreach (Star bo in _objs)
 				bo.Update();
-			}
 
             for (int iA = 0; iA < Asteroids.Count; iA++)
             {
@@ -232,7 +245,8 @@ namespace GU_Asteroids
 						a.Destroy();
 						score += a.Power;
                         Asteroids[iA] = null;
-                        Bullets[iB] = null;
+						ASTEROIDS_COUNTER--;
+						Bullets[iB] = null;
 					}
 				}
 
@@ -248,6 +262,10 @@ namespace GU_Asteroids
 			}
 		}
 
+
+		/// <summary>
+		/// Симуляция fps
+		/// </summary>
 		private void Timer_Tick(object sender, EventArgs e)
 		{
 			if(score >= MAX_SCORE)
@@ -260,6 +278,10 @@ namespace GU_Asteroids
 			Update();
 		}
 
+
+		/// <summary>
+		/// Заканчивает игру
+		/// </summary>
 		public void Finish()
 		{
 			String  message = "LOL U DIED";
@@ -270,7 +292,7 @@ namespace GU_Asteroids
 				size = 30;
 				
 			}
-			GameLogger(Log, "Game Over " + message);
+			GameLogger(console, "Game Over " + message);
 
 			t.Stop();
 			Buffer.Graphics.DrawString(message, new Font(FontFamily.GenericSansSerif,
